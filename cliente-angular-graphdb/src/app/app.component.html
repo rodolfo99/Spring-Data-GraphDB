@@ -1,0 +1,279 @@
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">B</span>
+    <div><strong>Biblioteca</strong><span>GraphDB</span></div>
+  </div>
+  <span class="workspace-label">Catálogo de libros</span>
+</header>
+<main>
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">TU COLECCIÓN</p>
+      <h1>Libros</h1>
+    </div>
+    <button type="button" class="primary" (click)="nuevo()" [disabled]="ocupado()">
+      + Nuevo libro
+    </button>
+  </div>
+  @if (error()) {
+    <div class="message error" role="alert">
+      <strong>No se completó la operación.</strong> {{ error() }}
+      <button type="button" (click)="cargar()" [disabled]="ocupado()">Actualizar lista</button>
+    </div>
+  }
+  @if (aviso()) {
+    <div class="message success" role="status">
+      {{ aviso()
+      }}<button class="close" type="button" aria-label="Cerrar aviso" (click)="aviso.set('')">
+        ×
+      </button>
+    </div>
+  }
+  <div class="workspace">
+    <section class="catalog" aria-label="Catálogo">
+      <form class="filters" [formGroup]="filtros" (ngSubmit)="buscar()">
+        <fieldset [disabled]="ocupado()">
+          <legend class="sr-only">Buscar y ordenar libros</legend>
+          <div class="search-row">
+            <label
+              >Título<input
+                formControlName="titulo"
+                placeholder="Buscar por título"
+                type="search" /></label
+            ><label
+              >Autor<input
+                formControlName="autor"
+                placeholder="Buscar por autor"
+                type="search" /></label
+            ><button class="primary" type="submit">Buscar</button>
+          </div>
+          <div class="sort-row">
+            <label
+              >Ordenar por<select formControlName="ordenar">
+                <option value="titulo">Título</option>
+                <option value="autor">Autor</option>
+                <option value="anio">Año</option>
+                <option value="id">ID</option>
+              </select></label
+            ><label
+              >Dirección<select formControlName="direccion">
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+              </select></label
+            ><label
+              >Por página<select formControlName="tamanio">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="20">20</option>
+                <option [ngValue]="50">50</option>
+                <option [ngValue]="100">100</option>
+              </select></label
+            ><button class="link-button" type="button" (click)="limpiar()">Limpiar filtros</button>
+          </div>
+        </fieldset>
+      </form>
+      <div class="results-heading">
+        <strong>{{ datos()?.totalElementos ?? 0 }} libros</strong
+        ><button type="button" class="link-button" (click)="cargar()" [disabled]="ocupado()">
+          Actualizar
+        </button>
+      </div>
+      <div class="table-wrap" [attr.aria-busy]="cargando()">
+        <table>
+          <caption class="sr-only">
+            Libros encontrados
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Título</th>
+              <th scope="col">Autor</th>
+              <th scope="col">Año</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (libro of datos()?.contenido ?? []; track libro.id) {
+              <tr [class.editing]="editandoId() === libro.id">
+                <td>
+                  <strong class="book-title">{{ libro.titulo }}</strong
+                  ><span class="book-id" [title]="libro.id">{{ libro.id }}</span>
+                </td>
+                <td>{{ libro.autor }}</td>
+                <td class="year">{{ libro.anio ?? '—' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      (click)="editar(libro)"
+                      [disabled]="ocupado()"
+                      [attr.aria-label]="'Editar ' + libro.titulo"
+                    >
+                      Editar</button
+                    ><button
+                      type="button"
+                      class="danger-link"
+                      (click)="pedirBorrado(libro)"
+                      [disabled]="ocupado()"
+                      [attr.aria-label]="'Borrar ' + libro.titulo"
+                    >
+                      Borrar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @if (porBorrar()?.id === libro.id) {
+                <tr class="confirm-row">
+                  <td colspan="4">
+                    <div class="confirm-box" role="alert">
+                      <p>
+                        ¿Borrar <strong>{{ libro.titulo }}</strong
+                        >?
+                      </p>
+                      <div>
+                        <button
+                          type="button"
+                          class="danger"
+                          (click)="confirmarBorrado()"
+                          [disabled]="ocupado()"
+                        >
+                          Confirmar borrado</button
+                        ><button type="button" (click)="cancelarBorrado()" [disabled]="ocupado()">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="4">
+                  <div class="empty">
+                    <strong>{{
+                      cargando()
+                        ? 'Cargando libros…'
+                        : error()
+                          ? 'No se pudo cargar el catálogo'
+                          : 'No hay libros para mostrar'
+                    }}</strong>
+                    <p>
+                      {{
+                        cargando()
+                          ? 'Consultando la biblioteca.'
+                          : error()
+                            ? 'Revisa el mensaje de error y vuelve a intentarlo.'
+                            : 'Crea un libro o cambia los filtros de búsqueda.'
+                      }}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" aria-label="Paginación">
+        <span role="status">{{
+          cargando()
+            ? 'Actualizando…'
+            : 'Mostrando ' +
+              primeraFila() +
+              '–' +
+              ultimaFila() +
+              ' de ' +
+              (datos()?.totalElementos ?? 0)
+        }}</span>
+        <div>
+          <button
+            type="button"
+            (click)="irPagina((datos()?.pagina ?? 0) - 1)"
+            [disabled]="ocupado() || (datos()?.pagina ?? 0) === 0"
+          >
+            Anterior</button
+          ><span
+            >{{ (datos()?.totalPaginas ?? 0) ? datos()!.pagina + 1 : 0 }} /
+            {{ datos()?.totalPaginas ?? 0 }}</span
+          ><button
+            type="button"
+            (click)="irPagina((datos()?.pagina ?? 0) + 1)"
+            [disabled]="ocupado() || !datos() || datos()!.pagina + 1 >= datos()!.totalPaginas"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </section>
+    <aside class="editor-panel" aria-labelledby="editor-title">
+      <div class="editor-heading">
+        <span class="eyebrow">{{ editandoId() ? 'EDITAR REGISTRO' : 'AÑADIR AL CATÁLOGO' }}</span>
+        <h2 id="editor-title">{{ editandoId() ? 'Editar libro' : 'Nuevo libro' }}</h2>
+      </div>
+      <form [formGroup]="editor" (ngSubmit)="guardar()">
+        <fieldset [disabled]="ocupado()">
+          <legend class="sr-only">Datos del libro</legend>
+          @if (editandoId()) {
+            <div class="selected-id">
+              <span>ID del libro</span><code>{{ editandoId() }}</code>
+            </div>
+          }
+          <label for="titulo">Título <span aria-hidden="true">*</span></label
+          ><input
+            #tituloEditor
+            id="titulo"
+            formControlName="titulo"
+            maxlength="500"
+            autocomplete="off"
+            aria-required="true"
+            [attr.aria-invalid]="editor.controls.titulo.touched && editor.controls.titulo.invalid"
+            aria-describedby="titulo-error"
+          /><span id="titulo-error" class="field-error">
+            @if (editor.controls.titulo.touched && editor.controls.titulo.invalid) {
+              Escribe un título de hasta 500 caracteres.
+            }
+          </span>
+          <label for="autor">Autor <span aria-hidden="true">*</span></label
+          ><input
+            id="autor"
+            formControlName="autor"
+            maxlength="300"
+            autocomplete="off"
+            aria-required="true"
+            [attr.aria-invalid]="editor.controls.autor.touched && editor.controls.autor.invalid"
+            aria-describedby="autor-error"
+          /><span id="autor-error" class="field-error">
+            @if (editor.controls.autor.touched && editor.controls.autor.invalid) {
+              Escribe un autor de hasta 300 caracteres.
+            }
+          </span>
+          <label for="anio">Año <span class="optional">Opcional</span></label
+          ><input
+            id="anio"
+            formControlName="anio"
+            type="number"
+            min="0"
+            max="9999"
+            step="1"
+            inputmode="numeric"
+            [attr.aria-invalid]="editor.controls.anio.touched && editor.controls.anio.invalid"
+            aria-describedby="anio-error"
+          /><span id="anio-error" class="field-error">
+            @if (editor.controls.anio.touched && editor.controls.anio.invalid) {
+              Usa un número entero entre 0 y 9999.
+            }
+          </span>
+          <div class="editor-actions">
+            <button class="primary" type="submit">
+              {{
+                guardando() ? 'Procesando…' : editandoId() ? 'Guardar cambios' : 'Crear libro'
+              }}</button
+            ><button type="button" (click)="nuevo()">
+              {{ editandoId() ? 'Cancelar edición' : 'Limpiar' }}
+            </button>
+          </div>
+        </fieldset>
+      </form>
+      <p class="editor-note">Los campos marcados con * son obligatorios.</p>
+    </aside>
+  </div>
+</main>
+<footer>Biblioteca · Spring Data GraphDB</footer>

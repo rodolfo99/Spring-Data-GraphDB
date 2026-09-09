@@ -1,0 +1,12 @@
+server:
+  port: ${SERVER_PORT:8080}
+spring:
+  application:
+    name: graphdb-demo
+  mvc:
+    problemdetails:
+      enabled: true
+graphdb:
+  url: ${GRAPHDB_URL:http://localhost:7200/repositories/libros}
+  username: ${GRAPHDB_USERNAME:}
+  password: ${GRAPHDB_PASSWORD:}

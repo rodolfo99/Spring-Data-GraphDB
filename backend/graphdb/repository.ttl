@@ -1,0 +1,22 @@
+@prefix rep: <http://www.openrdf.org/config/repository#> .
+@prefix sr: <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail: <http://www.openrdf.org/config/sail#> .
+@prefix gdb: <http://www.ontotext.com/config/graphdb#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+<#libros> a rep:Repository ;
+ rep:repositoryID "libros" ;
+ rdfs:label "Biblioteca demo Spring Data GraphDB" ;
+ rep:repositoryImpl [
+  rep:repositoryType "graphdb:SailRepository" ;
+  sr:sailImpl [
+   sail:sailType "graphdb:Sail" ;
+   gdb:repository-type "file-repository" ;
+   gdb:storage-folder "storage" ;
+   gdb:ruleset "empty" ;
+   gdb:base-URL "https://ejemplo.mx/" ;
+   gdb:enable-context-index "true" ;
+   gdb:enablePredicateList "true" ;
+   gdb:query-timeout "30" ;
+   gdb:throw-QueryEvaluationException-on-timeout "true"
+  ]
+ ] .

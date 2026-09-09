@@ -1,0 +1,17 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> cliente-angular-graphdb@1.0.0 build
+> ng build
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-XFXT7PSE.js    | main          | 227.06 kB |                61.89 kB
+styles-KQQ77PTJ.css | styles        |   6.62 kB |                 1.82 kB
+
+                    | Initial total | 233.68 kB |                63.70 kB
+
+Application bundle generation complete. [2.774 seconds] - 2026-09-09T16:09:46.229Z
+
+Output location: /workspace/scratch/ad9725e4a4c5/graphdb-proyecto-legible-v2/cliente-angular-graphdb/dist/cliente-angular-graphdb
+

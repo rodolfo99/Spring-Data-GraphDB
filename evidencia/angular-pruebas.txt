@@ -1,0 +1,18 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> cliente-angular-graphdb@1.0.0 test
+> ng test --watch=false
+
+❯ Building...
+✔ Building...
+Application bundle generation complete. [1.496 seconds] - 2026-09-09T16:09:48.452Z
+
+
+ RUN  v4.1.0 /workspace/scratch/ad9725e4a4c5/graphdb-proyecto-legible-v2/cliente-angular-graphdb
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  18:09:48
+   Duration  1.17s (transform 80ms, setup 223ms, import 115ms, tests 294ms, environment 398ms)
+
